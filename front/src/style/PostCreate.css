@@ -1,0 +1,63 @@
+.post-create-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+.post-create-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: #333;
+}
+
+.post-create-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.post-create-form input,
+.post-create-form textarea,
+.post-create-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.post-create-form input:focus,
+.post-create-form textarea:focus,
+.post-create-form select:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.post-create-form select {
+  width: 200px;
+}
+
+.post-create-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.post-create-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #ffc0e2;
+  border: none;
+  border-radius: 6px;
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}

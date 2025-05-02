@@ -1,0 +1,78 @@
+.register-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+    height: 100vh;
+}
+
+.register-form {
+    background-color: white;
+    padding: 40px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 500px;
+}
+
+.register-form label {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.register-form input,
+.register-form select {
+    height: 5vh;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.register-form button {
+    padding: 10px;
+    background-color: #adadad;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 40px;
+}
+
+.register-form button:hover {
+    background-color: #b4b4b4;
+}
+
+.logo {
+    cursor: pointer;
+    font-size: 32px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.login-link {
+    margin-top: 10px;
+    color: #007bff;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+}
+
+.login-link span {
+    font-weight: bold;
+}
+
+.error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    text-align: center;
+}

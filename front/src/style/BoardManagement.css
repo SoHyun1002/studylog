@@ -1,0 +1,79 @@
+.board-management-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .board-management-container h2 {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .board-add-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    justify-content: center;
+  }
+  
+  .board-add-form input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .board-add-form button {
+    padding: 8px 14px;
+    background-color: #4caf50;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .board-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .board-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .board-list span {
+    flex: 1;
+  }
+  
+  .board-list input {
+    flex: 1;
+    padding: 6px 10px;
+    margin-right: 10px;
+  }
+  
+  .board-list button {
+    margin-left: 6px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .board-list button:nth-child(2) {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .board-list button:nth-child(3) {
+    background-color: #f44336;
+    color: white;
+  }
+  

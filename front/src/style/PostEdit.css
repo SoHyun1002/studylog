@@ -1,0 +1,84 @@
+.post-edit-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+.post-edit-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: #333;
+}
+
+.post-edit-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.post-edit-form input,
+.post-edit-form textarea,
+.post-edit-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.post-edit-form input:focus,
+.post-edit-form textarea:focus,
+.post-edit-form select:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.post-edit-form select {
+  width: 200px;
+}
+
+.post-edit-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.post-edit-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.post-edit-form button:hover {
+  background-color: #45a049;
+}
+
+.delete-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #f44336;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 12px;
+}
+
+.delete-button:hover {
+  background-color: #e53935;
+}
