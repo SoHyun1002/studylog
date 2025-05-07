@@ -52,6 +52,10 @@ public class AuthService {
         this.objectMapper = objectMapper;
     }
 
+
+
+
+
     /**
      * 사용자가 입력한 비밀번호와 DB에 저장된 암호화된 비밀번호가 일치하는지 확인합니다.
      *
@@ -66,6 +70,13 @@ public class AuthService {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
+
+
+
+
+
+
+
     /**
      * 이메일로 사용자 정보를 조회합니다.
      *
@@ -76,9 +87,17 @@ public class AuthService {
         return userRepository.findByuEmail(uEmail);
     }
 
+
+
+
+
+
+
     /**
      * 로그인 처리를 담당하는 메서드입니다.
      * 로그인 성공 시 액세스 토큰과 리프레시 토큰을 생성하여 쿠키로 응답에 포함합니다.
+     * AccessToken에는 uEmail, uName, uRole을 claims로 포함합니다.
+     * Redis에는 RefreshToken과 사용자 정보를 저장합니다.
      *
      * @param request 로그인 요청 정보(이메일, 비밀번호)
      * @param httpResponse 쿠키를 추가할 HttpServletResponse
@@ -87,57 +106,49 @@ public class AuthService {
     public ResponseEntity<Map<String, Object>> handleLogin(LoginRequest request, HttpServletResponse httpResponse) {
         Optional<User> userOptional = findByuEmail(request.getuEmail());
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error",  "Invalid email"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "잘못된 이메일 또는 비밀번호입니다."));
         }
 
         User user = userOptional.get();
         if (!checkPassword(request.getuPassword(), user.getuPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid password"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "잘못된 이메일 또는 비밀번호입니다."));
         }
 
-        String accessToken = jwtToken.generateToken(user.getuEmail());
+        String accessToken = jwtToken.generateTokenWithClaims(user.getuEmail(), user.getuName(), user.getuRole());
         String refreshToken = jwtToken.generateRefreshToken(user.getuEmail());
 
-        RedisUserInfo redisUserInfo = new RedisUserInfo(
-              user.getuEmail(),
-              user.getuName()
-        );
-
         try {
-            String redisValue = objectMapper.writeValueAsString(redisUserInfo); //직렬화
-
-            // Store both accessToken and refreshToken in Redis
-            redisTemplate.opsForValue().set(accessToken, redisValue);
-            redisTemplate.opsForValue().set(refreshToken, redisValue);
+            RedisUserInfo redisUserInfo = new RedisUserInfo(user.getuEmail(), user.getuName(), user.getuRole());
+            String redisValue = objectMapper.writeValueAsString(redisUserInfo);
+            redisTemplate.opsForValue().set("refresh:" + refreshToken, redisValue, java.time.Duration.ofDays(7));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "서버 내부 오류가 발생했습니다."));
         }
 
-
-        System.out.println("✅ AccessToken: " + accessToken);
-        System.out.println("✅ RefreshToken: " + refreshToken);
-
-        // 리프레시 토큰을 저장합니다.
         RefreshToken tokenEntity = new RefreshToken();
         tokenEntity.setToken(refreshToken);
         tokenEntity.setUId(user.getuId());
         tokenEntity.setExpiryDate(LocalDateTime.now().plusDays(7));
         refreshTokenRepository.save(tokenEntity);
 
-        System.out.println("📝 Redis에 저장된 RefreshToken: user:token:" + user.getuId() + " = " + refreshToken);
-
-        // 리프레시 토큰만 HttpOnly 쿠키에 저장
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
         httpResponse.addCookie(refreshTokenCookie);
 
-        // 응답 본문에 AccessToken만 반환
-        return ResponseEntity.ok(
-                Map.of("accessToken", accessToken)
-        );
+        return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
+
+
+
+
+
+
 
     /**
      * 리프레시 토큰을 검증하고 새로운 액세스 토큰을 발급합니다.
@@ -147,22 +158,36 @@ public class AuthService {
      */
     public ResponseEntity<Map<String, Object>> handleRefreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Refresh token is missing"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "리프레시 토큰이 존재하지 않습니다."));
         }
 
-        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByToken(refreshToken);
-        if (tokenOptional.isEmpty() || tokenOptional.get().getExpiryDate().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid or expired refresh token"));
+        String redisKey = "refresh:" + refreshToken;
+        String redisValue = redisTemplate.opsForValue().get(redisKey);
+
+        if (redisValue == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "유효하지 않거나 만료된 리프레시 토큰입니다."));
         }
 
-        RefreshToken token = tokenOptional.get();
-        User user = userRepository.findByuId(token.getuId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            RedisUserInfo userInfo = objectMapper.readValue(redisValue, RedisUserInfo.class);
+            String newAccessToken = jwtToken.generateTokenWithClaims(userInfo.getuEmail(), userInfo.getuName(), userInfo.getuRole());
 
-        String newAccessToken = jwtToken.generateToken(user.getuEmail());
+            System.out.println("🔄 새로운 AccessToken 발급 완료: " + newAccessToken);
 
-        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "토큰 역직렬화에 실패했습니다."));
+        }
     }
+
+
+
+
+
+
 
     /**
      * 요청으로부터 accessToken 쿠키 값을 추출합니다.
@@ -181,6 +206,12 @@ public class AuthService {
         }
         return null;
     }
+
+
+
+
+
+
 
     /**
      * 로그아웃 처리를 담당하는 메서드입니다.

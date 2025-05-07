@@ -4,61 +4,62 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import java.security.Key;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import jakarta.annotation.PostConstruct;
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtToken {
+
     private final String SECRET_KEY = "dGhpc19pc19hX3Zlcnlfc2VjdXJlX3Rlc3Rfc2VjcmV0X2tleQ=="; // Base64 encoded
 
-    // Access Token을 생성하는 메서드
-    // 사용자 이메일을 기반으로 JWT를 생성하고, 5시간 동안 유효하게 설정함
-    public String generateToken(String email) {
-        Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
+    }
+
+
+    // Access Token 생성: 사용자 이메일, 이름, 권한, iat, exp를 포함 (5시간 유효)
+    public String generateTokenWithClaims(String uEmail, String uName, String uRole) {
+        Key key = getSigningKey();
+
+        long now = System.currentTimeMillis();
+        Date issuedAt = new Date(now);
+        Date expiryDate = new Date(now + 5 * 60 * 60 * 1000); // 5시간
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("uEmail", uEmail);
+        claims.put("uName", uName);
+        claims.put("uRole", uRole);
+        claims.put("iat", issuedAt.getTime() / 1000); // 초 단위
+        claims.put("exp", expiryDate.getTime() / 1000);
+
         return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 5*60*60*1000))
+                .setClaims(claims)
+                .setIssuedAt(issuedAt)
+                .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // JWT 토큰에서 사용자 이메일(Subject)을 추출하는 메서드
-    public String extractEmail(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
-
-    // 애플리케이션 시작 시 테스트용 기본 JWT 토큰을 생성하고 출력하는 메서드
-    @PostConstruct
-    public void printDefaultToken() {
-        String token = generateToken("testuser@example.com");
-        System.out.println("🔐 Default JWT for testuser@example.com:\n" + token);
-    }
-
-    // Refresh Token을 생성하는 메서드
-    // 7일 동안 유효하며, 사용자 이메일을 기반으로 JWT를 생성함
+    // Refresh Token 생성: 이메일 기반 (7일 유효)
     public String generateRefreshToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) // 7일
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-
-    // 토큰 유효성 검사 메서드
+    // JWT 토큰 유효성 검사
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(getSigningKey())
                 .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
@@ -66,8 +67,18 @@ public class JwtToken {
         }
     }
 
-    // 토큰에서 이메일을 추출하는 메서드
+    // 토큰에서 사용자 이메일(Subject) 추출
+    public String extractEmail(String token) {
+        return Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    // 토큰에서 사용자 이메일 추출
     public String getUserEmail(String token) {
         return extractEmail(token);
     }
+
 }

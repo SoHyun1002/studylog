@@ -10,6 +10,7 @@ import com.study.backend.entity.User;
 import com.study.backend.service.AuthService;
 import com.study.backend.service.UserCacheService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.Cookie;
@@ -38,8 +39,20 @@ public class UserAuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request, HttpServletResponse httpResponse) {
-        return authService.handleLogin(request, httpResponse);
+        ResponseEntity<Map<String, Object>> loginResponse = authService.handleLogin(request, httpResponse);
+
+        ResponseCookie cookie = ResponseCookie.from("cookieName", "cookieValue")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/")
+                .build();
+        httpResponse.addHeader("Set-Cookie", cookie.toString());
+
+        return loginResponse;
     }
+
+
 
     /**
      * 리프레시 토큰을 사용해 새로운 액세스 토큰을 발급받는 요청을 처리합니다.
@@ -51,7 +64,7 @@ public class UserAuthController {
     }
 
 
-    /**
+    /**˜
      * 로그아웃 요청을 처리합니다.
      * 쿠키에서 액세스 토큰을 제거하여 클라이언트 측 인증 상태를 만료시킵니다.
      */
