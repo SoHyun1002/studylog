@@ -78,7 +78,16 @@ public class JwtToken {
 
     // 토큰에서 사용자 이메일 추출
     public String getUserEmail(String token) {
-        return extractEmail(token);
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("uEmail", String.class);
+        } catch (Exception e) {
+            throw new RuntimeException("토큰에서 이메일을 추출할 수 없습니다: " + e.getMessage());
+        }
     }
 
 }

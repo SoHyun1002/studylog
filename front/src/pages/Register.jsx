@@ -31,15 +31,23 @@ function Register() {
         }
 
         try {
-            const { confirmPassword, ...userData } = form;
-            await axios.post("http://localhost:8921/api/users/register", userData);
-            alert("회원가입 성공!");
-            navigate("/login");
+            // 임시로 회원가입 정보를 로컬 스토리지에 저장
+            localStorage.setItem('tempRegisterData', JSON.stringify(form));
+            
+            // 이메일 인증 요청
+            await axios.post("http://localhost:8921/api/mail/send-verification", null, {
+                params: {
+                    email: form.uEmail
+                }
+            });
+            
+            // 이메일 인증 페이지로 이동
+            navigate("/email-verification");
         } catch (error) {
             if (error.response && error.response.data) {
-                setError(error.response.data.message || "회원가입 실패");
+                setError(error.response.data.message || "이메일 전송 실패");
             } else {
-                setError("회원가입 중 오류가 발생했습니다.");
+                setError("이메일 전송 중 오류가 발생했습니다.");
             }
         }
     };
@@ -91,6 +99,7 @@ function Register() {
                     onChange={handleChange}
                     required
                 />
+
                 {error && <p className="error-message">{error}</p>}
                 <button type="submit">회원가입</button>
                 <p onClick={() => navigate("/login")} className="login-link">

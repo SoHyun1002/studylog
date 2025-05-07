@@ -12,18 +12,19 @@ import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
 
 @Service
-public class AccountService {
-    private static final Logger log = LoggerFactory.getLogger(AccountService.class);
+public class UserDeletionService {
+    private static final Logger log = LoggerFactory.getLogger(UserDeletionService.class);
 
     private final UserRepository userRepository;
     private final JwtToken jwtToken;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public AccountService(UserRepository userRepository,
-                         JwtToken jwtToken,
-                         RefreshTokenRepository refreshTokenRepository) {
+    public UserDeletionService(UserRepository userRepository,
+                             JwtToken jwtToken,
+                             RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.jwtToken = jwtToken;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -32,7 +33,7 @@ public class AccountService {
     @Transactional
     public ResponseEntity<Map<String, String>> deleteAccount(String type, String uEmail, String token) {
         try {
-            log.info("계정 삭제 요청 - email: {}", uEmail);
+            log.info("계정 삭제 요청 - type: {}, email: {}", type, uEmail);
 
             if (token == null || !token.startsWith("Bearer ")) {
                 log.error("인증 토큰이 없거나 잘못된 형식입니다.");
@@ -58,18 +59,31 @@ public class AccountService {
             }
 
             User user = userOpt.get();
-            userRepository.delete(user);
-            log.info("계정 삭제 완료 - email: {}", uEmail);
-            
-            // 캐시 무효화
-            refreshTokenRepository.deleteByuId(user.getuId());
-            log.info("리프레시 토큰 삭제 완료 - userId: {}", user.getuId());
-            
-            return ResponseEntity.ok(Map.of("message", "계정이 삭제되었습니다. 로그아웃됩니다."));
+            if ("SOFT".equalsIgnoreCase(type)) {
+                LocalDateTime now = LocalDateTime.now();
+                log.info("소프트 삭제 - deletedAt 설정 시간: {}", now);
+                user.setDeletedAt(now);
+                userRepository.save(user);
+                log.info("소프트 삭제 완료 - email: {}, deletedAt: {}", uEmail, user.getDeletedAt());
+                
+                // 캐시 무효화
+                refreshTokenRepository.deleteByuId(user.getuId());
+                log.info("리프레시 토큰 삭제 완료 - userId: {}", user.getuId());
+                
+                return ResponseEntity.ok(Map.of("message", "계정이 삭제되었습니다. 로그아웃됩니다."));
+            } else if ("HARD".equalsIgnoreCase(type)) {
+                userRepository.delete(user);
+                log.info("하드 삭제 완료 - email: {}", uEmail);
+                return ResponseEntity.ok(Map.of("message", "계정이 완전히 삭제되었습니다."));
+            } else {
+                log.error("잘못된 삭제 타입: {}", type);
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "잘못된 삭제 타입입니다."));
+            }
         } catch (Exception e) {
             log.error("계정 삭제 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "계정 삭제 처리 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
-} 
+}

@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -130,7 +131,7 @@ public class AuthService {
 
         RefreshToken tokenEntity = new RefreshToken();
         tokenEntity.setToken(refreshToken);
-        tokenEntity.setUId(user.getuId());
+        tokenEntity.setuId(user.getuId());
         tokenEntity.setExpiryDate(LocalDateTime.now().plusDays(7));
         refreshTokenRepository.save(tokenEntity);
 
@@ -141,7 +142,13 @@ public class AuthService {
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
         httpResponse.addCookie(refreshTokenCookie);
 
-        return ResponseEntity.ok(Map.of("accessToken", accessToken));
+        Map<String, Object> response = new HashMap<>();
+        response.put("accessToken", accessToken);
+        response.put("uEmail", user.getuEmail());
+        response.put("uName", user.getuName());
+        response.put("uRole", user.getuRole());
+
+        return ResponseEntity.ok(response);
     }
 
 
@@ -236,6 +243,13 @@ public class AuthService {
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(0); // 즉시 만료
         response.addCookie(refreshCookie);
+    }
+
+    /**
+     * 비밀번호를 인코딩합니다.
+     */
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
     }
 
 }

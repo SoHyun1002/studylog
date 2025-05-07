@@ -17,7 +17,7 @@ public class RefreshToken {
         this.token = token;
     }
 
-    public void setUId(Long uId) {
+    public void setuId(Long uId) {
         this.uId = uId;
     }
 

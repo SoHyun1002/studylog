@@ -13,6 +13,8 @@ import PostCreate from './pages/PostCreate';
 import SchedulePage from './pages/SchedulePage';
 import PostEdit from './pages/PostEdit';
 import MyPage from './pages/Mypage';
+import EmailVerification from "./pages/EmailVerification";
+import ChangePassword from './pages/ChangePassword';
 
 function App() {
     const location = useLocation();
@@ -39,6 +41,8 @@ function App() {
                         <Route path="/post/edit/:postId" element={<PostEdit />} />
                         <Route path="/boards/manage" element={<BoardManagement />} />
                         <Route path="/schedule" element={<SchedulePage />} />
+                        <Route path="/email-verification" element={<EmailVerification />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
                     </Routes>
                 </div>
             )}

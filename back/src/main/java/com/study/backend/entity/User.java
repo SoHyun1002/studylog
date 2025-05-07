@@ -2,6 +2,8 @@ package com.study.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "users")
@@ -25,8 +27,11 @@ public class User {
     private String uRole;       // 유저 권한
 
     @Column(name = "deleted_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime deletedAt;
 
+    @Column(name = "email_verified")
+    private Boolean emailVerified;  // 이메일 인증 여부
 
     public Long getuId() {
         return uId;
@@ -74,5 +79,13 @@ public class User {
 
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

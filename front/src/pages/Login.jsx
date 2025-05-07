@@ -17,10 +17,11 @@ function Login() {
                 uEmail,
                 uPassword,
             });
-            const user = res.data;
+            const { accessToken, ...userData } = res.data;
 
             alert("로그인 성공!");
-            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("user", JSON.stringify(userData));
             navigate("/");
 
         } catch (err) {
