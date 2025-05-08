@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { updateUserInfo, logout } from '../store/authSlice';
 import "../style/MyPage.css";
 import "../style/modal.css";
 import "../style/deleteAccount.css";
 
 const MyPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [password, setPassword] = useState('');
@@ -37,8 +40,19 @@ const MyPage = () => {
         .then(res => {
             console.log('사용자 정보:', res.data);
             console.log('deletedAt 값:', res.data.deletedAt);
+            
+            // Redux store 업데이트
+            dispatch(updateUserInfo({
+                uName: res.data.uName,
+                uEmail: res.data.uEmail,
+                uRole: res.data.uRole
+            }));
+
+            // 로컬 상태 업데이트
             setUser({
-                ...res.data,
+                name: res.data.uName,
+                email: res.data.uEmail,
+                role: res.data.uRole,
                 deletedAt: res.data.deletedAt ? new Date(res.data.deletedAt).toLocaleString() : null
             });
             setEditForm({
@@ -88,11 +102,9 @@ const MyPage = () => {
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await axios.put('http://localhost:8921/api/users/update', 
+            const response = await axios.post('http://localhost:8921/api/users/update', 
                 editForm,
                 {
                     headers: {
@@ -102,15 +114,26 @@ const MyPage = () => {
                 }
             );
 
+            console.log('서버 응답:', response.data);
+
+            // Redux store 업데이트
+            dispatch(updateUserInfo({
+                uName: editForm.uName,
+                uEmail: user.email,
+                uRole: user.role
+            }));
+
+            // 로컬 상태 업데이트
+            setUser(prevUser => ({
+                ...prevUser,
+                name: editForm.uName
+            }));
+            
             alert('회원정보가 수정되었습니다.');
             setIsEditing(false);
-            // 수정된 정보로 상태 업데이트
-            setUser(prev => ({
-                ...prev,
-                ...editForm
-            }));
         } catch (error) {
-            setError(error.response?.data?.message || '회원정보 수정에 실패했습니다.');
+            console.error('사용자 정보 업데이트 실패:', error);
+            alert('사용자 정보 업데이트에 실패했습니다.');
         }
     };
 
@@ -136,7 +159,7 @@ const MyPage = () => {
             if (response.data.verified) {
                 try {
                     const deleteResponse = await axios.post(
-                        `http://localhost:8921/api/users/delete/${user.uEmail}`, 
+                        `http://localhost:8921/api/users/delete/${user.email}`, 
                         {},
                         {
                             headers: {
@@ -145,7 +168,14 @@ const MyPage = () => {
                         }
                     );
 
+                    // Redux store 초기화
+                    dispatch(logout());
+                    // 로컬 상태 초기화
+                    setUser(null);
+                    // localStorage 정리
                     localStorage.removeItem('accessToken');
+                    localStorage.removeItem('userState');
+                    
                     alert(deleteResponse.data.message);
                     navigate('/login');
                 } catch (deleteError) {
@@ -177,7 +207,7 @@ const MyPage = () => {
             if (response.data.verified) {
                 try {
                     const restoreResponse = await axios.post(
-                        `http://localhost:8921/api/users/restore/${user.uEmail}`,
+                        `http://localhost:8921/api/users/restore/${user.email}`,
                         {},
                         {
                             headers: {
@@ -210,8 +240,8 @@ const MyPage = () => {
 
             {!isEditing && !isVerifying && (
                 <div className="user-info">
-                    <p><strong>이름:</strong> {user.uName}</p>
-                    <p><strong>이메일:</strong> {user.uEmail}</p>
+                    <p><strong>이름:</strong> {user.name}</p>
+                    <p><strong>이메일:</strong> {user.email}</p>
                     <div className="button-group">
                         <button 
                             className="edit-button"
@@ -277,7 +307,7 @@ const MyPage = () => {
                         <label>이메일</label>
                         <input
                             type="email"
-                            value={user.uEmail}
+                            value={user.email}
                             disabled
                             className="disabled-input"
                         />

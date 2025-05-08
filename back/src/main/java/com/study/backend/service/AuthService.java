@@ -144,9 +144,6 @@ public class AuthService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("accessToken", accessToken);
-        response.put("uEmail", user.getuEmail());
-        response.put("uName", user.getuName());
-        response.put("uRole", user.getuRole());
 
         return ResponseEntity.ok(response);
     }
@@ -164,29 +161,44 @@ public class AuthService {
      * @return 새로 발급된 액세스 토큰 또는 오류 메시지를 담은 ResponseEntity를 반환합니다.
      */
     public ResponseEntity<Map<String, Object>> handleRefreshToken(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "리프레시 토큰이 존재하지 않습니다."));
-        }
-
-        String redisKey = "refresh:" + refreshToken;
-        String redisValue = redisTemplate.opsForValue().get(redisKey);
-
-        if (redisValue == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "유효하지 않거나 만료된 리프레시 토큰입니다."));
-        }
-
         try {
-            RedisUserInfo userInfo = objectMapper.readValue(redisValue, RedisUserInfo.class);
-            String newAccessToken = jwtToken.generateTokenWithClaims(userInfo.getuEmail(), userInfo.getuName(), userInfo.getuRole());
+            log.info("리프레시 토큰 요청 시작");
+            
+            if (refreshToken == null || refreshToken.isBlank()) {
+                log.error("리프레시 토큰이 없거나 비어있습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "리프레시 토큰이 존재하지 않습니다."));
+            }
 
-            System.out.println("🔄 새로운 AccessToken 발급 완료: " + newAccessToken);
+            String redisKey = "refresh:" + refreshToken;
+            String redisValue = redisTemplate.opsForValue().get(redisKey);
+            log.info("Redis에서 조회한 값: {}", redisValue);
+
+            if (redisValue == null) {
+                log.error("Redis에서 리프레시 토큰 정보를 찾을 수 없습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "유효하지 않거나 만료된 리프레시 토큰입니다."));
+            }
+
+            RedisUserInfo userInfo = objectMapper.readValue(redisValue, RedisUserInfo.class);
+            log.info("Redis에서 추출한 사용자 정보: {}", userInfo);
+
+            String newAccessToken = jwtToken.generateTokenWithClaims(
+                userInfo.getuEmail(), 
+                userInfo.getuName(), 
+                userInfo.getuRole()
+            );
+            log.info("새로운 액세스 토큰 생성 완료");
 
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
         } catch (JsonProcessingException e) {
+            log.error("Redis 데이터 역직렬화 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "토큰 역직렬화에 실패했습니다."));
+                    .body(Map.of("error", "토큰 처리 중 오류가 발생했습니다."));
+        } catch (Exception e) {
+            log.error("리프레시 토큰 처리 중 예외 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "서버 내부 오류가 발생했습니다."));
         }
     }
 

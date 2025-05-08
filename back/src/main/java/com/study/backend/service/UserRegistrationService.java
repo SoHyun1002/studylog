@@ -29,12 +29,14 @@ public class UserRegistrationService {
         this.passwordEncoder = passwordEncoder;
     }
 
+
+
+
     @Transactional
     public ResponseEntity<Map<String, String>> registerUser(User user) {
         try {
             log.info("회원가입 요청 - email: {}", user.getuEmail());
 
-            // 이메일 중복 체크
             Optional<User> existingUser = userRepository.findByuEmail(user.getuEmail());
             if (existingUser.isPresent()) {
                 log.error("이미 존재하는 이메일입니다: {}", user.getuEmail());
@@ -42,20 +44,13 @@ public class UserRegistrationService {
                         .body(Map.of("error", "이미 존재하는 이메일입니다."));
             }
 
-            // 비밀번호 암호화
+            user.setuRole("USER");
             user.setuPassword(passwordEncoder.encode(user.getuPassword()));
-            
-            // 사용자 저장
-            User savedUser = userRepository.save(user);
-            log.info("회원가입 완료 - email: {}", savedUser.getuEmail());
-
-            // JWT 토큰 생성
-            String token = jwtToken.generateTokenWithClaims(savedUser.getuEmail(), savedUser.getuName(), savedUser.getuRole());
-            log.info("JWT 토큰 생성 완료 - email: {}", savedUser.getuEmail());
+            userRepository.save(user);
+            log.info("회원가입 완료 - email: {}", user.getuEmail());
 
             return ResponseEntity.ok(Map.of(
-                "message", "회원가입이 완료되었습니다.",
-                "token", token
+                    "message", "회원가입이 완료되었습니다. 로그인해주세요."
             ));
         } catch (Exception e) {
             log.error("회원가입 처리 중 오류 발생", e);
@@ -63,6 +58,7 @@ public class UserRegistrationService {
                     .body(Map.of("error", "회원가입 처리 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
+
 
     @Transactional
     public ResponseEntity<Map<String, String>> verifyEmail(String email, String token) {
@@ -77,17 +73,16 @@ public class UserRegistrationService {
             }
 
             User user = userOpt.get();
-            if (Boolean.TRUE.equals(user.getEmailVerified())) {
-                log.error("이미 인증된 이메일입니다: {}", email);
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "이미 인증된 이메일입니다."));
-            }
 
-            user.setEmailVerified(true);
-            userRepository.save(user);
             log.info("이메일 인증 완료 - email: {}", email);
 
-            return ResponseEntity.ok(Map.of("message", "이메일 인증이 완료되었습니다."));
+            // 이메일 인증 완료 후 JWT 발급
+            String jwt = jwtToken.generateTokenWithClaims(user.getuEmail(), user.getuName(), user.getuRole());
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "이메일 인증이 완료되었습니다.",
+                    "token", jwt
+            ));
         } catch (Exception e) {
             log.error("이메일 인증 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

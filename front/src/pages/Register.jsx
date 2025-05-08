@@ -11,7 +11,6 @@ function Register() {
         uPassword: "",
         confirmPassword: "",
         uName: "",
-        role: "user",
     });
     const [error, setError] = useState("");
 
@@ -99,7 +98,6 @@ function Register() {
                     onChange={handleChange}
                     required
                 />
-
                 {error && <p className="error-message">{error}</p>}
                 <button type="submit">회원가입</button>
                 <p onClick={() => navigate("/login")} className="login-link">

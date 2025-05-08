@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { passwordChangeSuccess, passwordChangeFailure } from '../store/authSlice';
 import "../style/MyPage.css";
 
 const ChangePassword = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [form, setForm] = useState({
         currentPassword: '',
         newPassword: '',
@@ -52,11 +55,15 @@ const ChangePassword = () => {
                     }
                 );
 
+                // Redux store 업데이트
+                dispatch(passwordChangeSuccess());
                 alert('비밀번호가 변경되었습니다.');
                 navigate('/mypage');
             }
         } catch (error) {
-            setError(error.response?.data?.message || '비밀번호 변경에 실패했습니다.');
+            const errorMessage = error.response?.data?.message || '비밀번호 변경에 실패했습니다.';
+            setError(errorMessage);
+            dispatch(passwordChangeFailure(errorMessage));
         }
     };
 

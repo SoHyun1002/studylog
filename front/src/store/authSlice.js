@@ -1,41 +1,118 @@
-// // 유저 정보를 관리하는 슬라이스 생성
-// const userSlice = createSlice({
-//     name: 'user', // 슬라이스의 이름
-//     initialState: {
-//       // 초기 상태
-//       userInfo: null, // 유저 정보
-//       isLoggedIn: false, // 로그인 상태
-//       loading: false, // 로딩 상태
-//       error: null, // 에러 정보
-//     },
-//     reducers: {
-//       // 로그인 성공 시 유저 정보 저장
-//       loginSuccess: (state, action) => {
-//         state.userInfo = action.payload;
-//         state.isLoggedIn = true;
-//         state.loading = false;
-//         state.error = null;
-//       },
-//       // 로그인 실패 시 에러 정보 저장
-//       loginFailure: (state, action) => {
-//         state.userInfo = null;
-//         state.isLoggedIn = false;
-//         state.loading = false;
-//         state.error = action.payload;
-//       },
-//       // 로그아웃 시 상태 초기화
-//       logout: (state) => {
-//         state.userInfo = null;
-//         state.isLoggedIn = false;
-//         state.loading = false;
-//         state.error = null;
-//       },
-//       // 로딩 상태 설정
-//       setLoading: (state, action) => {
-//         state.loading = action.payload;
-//       },
-//     },
-//   });
-  
-//   // 액션 생성자 내보내기
-//   export const { loginSuccess, loginFailure, logout, setLoading } = userSlice.actions;
+import { createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
+
+// localStorage에서 초기 상태를 가져오는 함수
+const loadState = () => {
+    try {
+        const serializedState = localStorage.getItem('userState');
+        if (serializedState === null) {
+            return {
+                user: null,
+                isLoggedIn: false,
+                loading: false,
+                error: null
+            };
+        }
+        return JSON.parse(serializedState);
+    } catch (err) {
+        return {
+            user: null,
+            isLoggedIn: false,
+            loading: false,
+            error: null
+        };
+    }
+};
+
+const initialState = loadState();
+
+const authSlice = createSlice({
+    name: 'auth',
+    initialState,
+    reducers: {
+        loginStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        loginSuccess: (state, action) => {
+            state.loading = false;
+            state.isLoggedIn = true;
+            state.user = {
+                name: action.payload.uName,
+                email: action.payload.uEmail,
+                role: action.payload.uRole
+            };
+            state.error = null;
+            
+            // localStorage에 상태 저장
+            const currentState = {
+                ...state,
+                user: {
+                    name: action.payload.uName,
+                    email: action.payload.uEmail,
+                    role: action.payload.uRole
+                },
+                isLoggedIn: true,
+                loading: false,
+                error: null
+            };
+            localStorage.setItem('userState', JSON.stringify(currentState));
+        },
+        loginFailure: (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+            state.isLoggedIn = false;
+            state.user = null;
+            localStorage.removeItem('userState');
+            localStorage.removeItem('accessToken');
+        },
+        logout: (state) => {
+            state.user = null;
+            state.isLoggedIn = false;
+            state.loading = false;
+            state.error = null;
+            localStorage.removeItem('userState');
+            localStorage.removeItem('accessToken');
+            delete axios.defaults.headers.common['Authorization'];
+        },
+        updateUserInfo: (state, action) => {
+            state.user = {
+                ...state.user,
+                name: action.payload.uName,
+                email: action.payload.uEmail,
+                role: action.payload.uRole
+            };
+            
+            // localStorage 업데이트
+            const currentState = {
+                ...state,
+                user: {
+                    ...state.user,
+                    name: action.payload.uName,
+                    email: action.payload.uEmail,
+                    role: action.payload.uRole
+                },
+                isLoggedIn: true,
+                loading: false,
+                error: null
+            };
+            localStorage.setItem('userState', JSON.stringify(currentState));
+        },
+        setLoading: (state, action) => {
+            state.loading = action.payload;
+        },
+        // 비밀번호 변경 성공 시 처리
+        passwordChangeSuccess: (state) => {
+            state.error = null;
+            state.loading = false;
+        },
+        // 비밀번호 변경 실패 시 처리
+        passwordChangeFailure: (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+        }
+    }
+});
+
+export const { loginStart, loginSuccess, loginFailure, logout, updateUserInfo, setLoading, passwordChangeSuccess, passwordChangeFailure } = authSlice.actions;
+export default authSlice.reducer;

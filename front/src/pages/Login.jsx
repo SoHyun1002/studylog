@@ -1,11 +1,30 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../store/authSlice";
 import axios from "axios";
 
 import "../style/Login.css";
 
+// JWT 토큰 디코딩 함수
+const decodeToken = (token) => {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Token decode error:', error);
+        return null;
+    }
+};
+
 function Login() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [uEmail, setUEmail] = useState("");
     const [uPassword, setUPassword] = useState("");
     const [error, setError] = useState("");
@@ -17,11 +36,29 @@ function Login() {
                 uEmail,
                 uPassword,
             });
-            const { accessToken, ...userData } = res.data;
+            
+            const { accessToken } = res.data;
+            
+            // 토큰 디코딩하여 사용자 정보 추출
+            const decodedToken = decodeToken(accessToken);
+            if (!decodedToken) {
+                throw new Error('토큰 디코딩 실패');
+            }
 
+            // 토큰을 localStorage에 저장
+            localStorage.setItem('accessToken', accessToken);
+            
+            // axios 기본 헤더에 토큰 설정
+            axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+            // Redux에는 사용자 정보만 저장
+            dispatch(loginSuccess({
+                email: decodedToken.uEmail,
+                name: decodedToken.uName,
+                role: decodedToken.uRole
+            }));
+            
             alert("로그인 성공!");
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("user", JSON.stringify(userData));
             navigate("/");
 
         } catch (err) {
