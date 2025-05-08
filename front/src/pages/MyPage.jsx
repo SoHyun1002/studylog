@@ -43,9 +43,9 @@ const MyPage = () => {
             
             // Redux store 업데이트
             dispatch(updateUserInfo({
-                uName: res.data.uName,
-                uEmail: res.data.uEmail,
-                uRole: res.data.uRole
+                Name: res.data.uName,
+                Email: res.data.uEmail,
+                Role: res.data.uRole
             }));
 
             // 로컬 상태 업데이트
@@ -104,8 +104,12 @@ const MyPage = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('accessToken');
+            console.log('변경할 이름:', editForm.uName);
+            
             const response = await axios.post('http://localhost:8921/api/users/update', 
-                editForm,
+                {
+                    uName: editForm.uName
+                },
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -118,9 +122,9 @@ const MyPage = () => {
 
             // Redux store 업데이트
             dispatch(updateUserInfo({
-                uName: editForm.uName,
-                uEmail: user.email,
-                uRole: user.role
+                Name: editForm.uName,
+                Email: user.email,
+                Role: user.role
             }));
 
             // 로컬 상태 업데이트
@@ -131,6 +135,29 @@ const MyPage = () => {
             
             alert('회원정보가 수정되었습니다.');
             setIsEditing(false);
+
+            // 변경 후 즉시 사용자 정보 다시 가져오기
+            const userResponse = await axios.get('http://localhost:8921/api/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            console.log('변경 후 사용자 정보:', userResponse.data);
+            
+            // Redux store 다시 업데이트
+            dispatch(updateUserInfo({
+                Name: userResponse.data.uName,
+                Email: userResponse.data.uEmail,
+                Role: userResponse.data.uRole
+            }));
+
+            // 로컬 상태 다시 업데이트
+            setUser({
+                name: userResponse.data.uName,
+                email: userResponse.data.uEmail,
+                role: userResponse.data.uRole,
+                deletedAt: userResponse.data.deletedAt ? new Date(userResponse.data.deletedAt).toLocaleString() : null
+            });
         } catch (error) {
             console.error('사용자 정보 업데이트 실패:', error);
             alert('사용자 정보 업데이트에 실패했습니다.');

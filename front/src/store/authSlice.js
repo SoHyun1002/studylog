@@ -78,9 +78,9 @@ const authSlice = createSlice({
         updateUserInfo: (state, action) => {
             state.user = {
                 ...state.user,
-                name: action.payload.uName,
-                email: action.payload.uEmail,
-                role: action.payload.uRole
+                name: action.payload.Name,
+                email: action.payload.Email,
+                role: action.payload.Role
             };
             
             // localStorage 업데이트
@@ -88,9 +88,9 @@ const authSlice = createSlice({
                 ...state,
                 user: {
                     ...state.user,
-                    name: action.payload.uName,
-                    email: action.payload.uEmail,
-                    role: action.payload.uRole
+                    name: action.payload.Name,
+                    email: action.payload.Email,
+                    role: action.payload.Role
                 },
                 isLoggedIn: true,
                 loading: false,

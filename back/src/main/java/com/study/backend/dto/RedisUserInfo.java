@@ -1,6 +1,8 @@
 package com.study.backend.dto;
 
-public class RedisUserInfo {
+import com.study.backend.entity.User;
+
+public class RedisUserInfo extends User {
     private String uEmail;
     private String uName;
     private String uRole;

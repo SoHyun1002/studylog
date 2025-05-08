@@ -2,7 +2,7 @@ import './App.css'
 import { Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from './store/authSlice';
+import { loginSuccess, updateUserInfo } from './store/authSlice';
 import axios from 'axios';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -42,6 +42,24 @@ function App() {
                 }));
                 // axios 헤더에 토큰 설정
                 axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+
+                // 서버에서 최신 사용자 정보 가져오기
+                axios.get('http://localhost:8921/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${savedToken}`
+                    }
+                })
+                .then(res => {
+                    // Redux store 업데이트
+                    dispatch(updateUserInfo({
+                        Name: res.data.uName,
+                        Email: res.data.uEmail,
+                        Role: res.data.uRole
+                    }));
+                })
+                .catch(error => {
+                    console.error('사용자 정보 조회 실패:', error);
+                });
             }
         }
     }, [dispatch]);

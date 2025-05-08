@@ -25,12 +25,12 @@ public class UserProfileController {
     /**
      * 사용자 정보를 수정하는 엔드포인트입니다.
      *
-     * @param uId 수정할 사용자 ID
+     * @param uName 수정할 사용자 ID
      * @param updatedUser 수정된 사용자 정보가 담긴 객체
      * @return 수정된 사용자 정보
      */
-    @PostMapping("/update/{uId}")
-    public ResponseEntity<User> updateUser(@PathVariable Long uId, @RequestBody User updatedUser) {
-        return ResponseEntity.ok(userCacheService.updateUser(uId, updatedUser));
+    @PostMapping("/update/{uEmail}")
+    public ResponseEntity<User> updateUser(@PathVariable String uName, @RequestBody User updatedUser) {
+        return ResponseEntity.ok(userCacheService.updateUser(uName, updatedUser));
     }
 }
