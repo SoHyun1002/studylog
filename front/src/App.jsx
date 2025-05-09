@@ -19,11 +19,12 @@ import PostEdit from './pages/PostEdit';
 import MyPage from './pages/MyPage';
 import EmailVerification from "./pages/EmailVerification";
 import ChangePassword from './pages/ChangePassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
     const location = useLocation();
     const dispatch = useDispatch();
-    const hideLayoutRoutes = ["/login", "/register"];
+    const hideLayoutRoutes = ["/login", "/register", "/reset-password"];
     const hideLayout = hideLayoutRoutes.includes(location.pathname);
 
     useEffect(() => {
@@ -72,6 +73,7 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                 </Routes>
             ) : (
                 <div className="wrap">

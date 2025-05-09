@@ -101,7 +101,7 @@ function Login() {
                 <button type="submit">로그인</button>
                 <div className="login-links">
                     <p onClick={() => navigate("/")}>아이디(이메일) 찾기</p>
-                    <p onClick={() => navigate("/")}>비밀번호 찾기</p>
+                    <p onClick={() => navigate("/reset-password")}>비밀번호 변경</p>
                 </div>
             </form>
             <p onClick={() => navigate("/register")} className="signup-link">

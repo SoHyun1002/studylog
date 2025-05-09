@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -264,4 +265,26 @@ public class AuthService {
         return passwordEncoder.encode(password);
     }
 
+    /**
+     * 사용자의 비밀번호를 변경합니다.
+     * 기존 비밀번호를 null로 설정하고 새로운 비밀번호를 인코딩하여 저장합니다.
+     *
+     * @param email 사용자 이메일
+     * @param newPassword 새로운 비밀번호
+     * @throws RuntimeException 사용자를 찾을 수 없는 경우
+     */
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepository.findByuEmail(email)
+            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 기존 비밀번호를 null로 설정
+        user.setuPassword(null);
+        userRepository.save(user);
+
+        // 새로운 비밀번호로 업데이트
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setuPassword(encodedPassword);
+        userRepository.save(user);
+    }
 }

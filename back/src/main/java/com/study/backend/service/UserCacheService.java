@@ -26,6 +26,13 @@ public class UserCacheService {
      * @param uId 사용자 ID
      * @return User 객체
      */
+
+
+
+
+
+
+
     public User getUserById(Long uId) {
         // Redis 캐시에서 사용자 정보 조회
         User cached = redisTemplate.opsForValue().get("user:" + uId);

@@ -168,6 +168,9 @@ public class UserAuthController {
         }
     }
 
+
+
+
     /**
      * 현재 로그인한 사용자의 비밀번호를 검증합니다.
      */
@@ -192,42 +195,16 @@ public class UserAuthController {
         return ResponseEntity.ok(Map.of("verified", verified));
     }
 
-    /**
-     * 현재 로그인한 사용자의 비밀번호를 변경합니다.
-     */
-    @PutMapping("/change-password")
-    public ResponseEntity<Map<String, String>> changePassword(
-            @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, String> request) {
-        
-        if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
 
-        String accessToken = token.substring(7);
-        String email = jwtToken.getUserEmail(accessToken);
-        Optional<User> userOpt = userCacheService.findByuEmail(email);
-        
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
 
-        User user = userOpt.get();
-        String newPassword = request.get("newPassword");
-        
-        if (newPassword == null || newPassword.trim().isEmpty()) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("message", "새 비밀번호를 입력해주세요."));
-        }
 
-        // 새 비밀번호로 업데이트
-        user.setuPassword(authService.encodePassword(newPassword));
-        userCacheService.updateUser(user.getuEmail(), user);
 
-        return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
-    }
 
-    @PostMapping("/update")
+
+
+
+
+    @PutMapping("/update")
     public ResponseEntity<Map<String, Object>> updateUser(
             @RequestHeader("Authorization") String token,
             @RequestBody Map<String, String> request) {
@@ -300,6 +277,22 @@ public class UserAuthController {
             return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 완료되었습니다."));
         } else {
             return ResponseEntity.badRequest().body(Map.of("error", "잘못된 탈퇴 유형입니다."));
+        }
+    }
+
+    /**
+     * 비밀번호를 변경합니다.
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("newPassword");
+
+        try {
+            authService.resetPassword(email, newPassword);
+            return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 }

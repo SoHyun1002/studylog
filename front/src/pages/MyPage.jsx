@@ -106,7 +106,7 @@ const MyPage = () => {
             const token = localStorage.getItem('accessToken');
             console.log('변경할 이름:', editForm.uName);
             
-            const response = await axios.post('http://localhost:8921/api/users/update', 
+            const response = await axios.put('http://localhost:8921/api/users/update', 
                 {
                     uName: editForm.uName
                 },
@@ -275,12 +275,6 @@ const MyPage = () => {
                             onClick={() => setIsVerifying(true)}
                         >
                             회원정보 수정
-                        </button>
-                        <button 
-                            className="change-password-button"
-                            onClick={handleChangePassword}
-                        >
-                            비밀번호 변경
                         </button>
                         {user.deletedAt ? (
                             <button 

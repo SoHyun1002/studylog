@@ -55,7 +55,22 @@ const ChangePassword = () => {
                     }
                 );
 
+                // 🔥 비밀번호 변경 후 최신 사용자 정보 다시 불러오기
+                const userResponse = await axios.get('http://localhost:8921/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 // Redux store 업데이트
+                dispatch({
+                    type: 'auth/updateUserInfo',
+                    payload: {
+                        Name: userResponse.data.uName,
+                        Email: userResponse.data.uEmail,
+                        Role: userResponse.data.uRole
+                    }
+                });
+
                 dispatch(passwordChangeSuccess());
                 alert('비밀번호가 변경되었습니다.');
                 navigate('/mypage');
