@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const MyInfoSection = () => {
     const [user, setUser] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -28,7 +30,7 @@ const MyInfoSection = () => {
                 <p><strong>이메일:</strong> {user.email}</p>
             </div>
             <div className="button-group">
-                <button className="edit-button">정보 수정</button>
+                <button className="edit-button" onClick={() => navigate('/mypage/edit')}>정보 수정</button>            
             </div>
         </div>
     );

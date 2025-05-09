@@ -54,7 +54,7 @@ const authSlice = createSlice({
                 },
                 isLoggedIn: true,
                 loading: false,
-                error: null
+                error: null 
             };
             localStorage.setItem('userState', JSON.stringify(currentState));
         },

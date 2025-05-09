@@ -20,6 +20,7 @@ import MyPage from './pages/MyPage';
 import EmailVerification from "./pages/EmailVerification";
 import ChangePassword from './pages/ChangePassword';
 import ResetPassword from './pages/ResetPassword';
+import EditProfile from './pages/EditProfile';
 
 
 function App() {
@@ -89,6 +90,7 @@ function App() {
                         <Route path="/schedule" element={<SchedulePage />} />
                         <Route path="/email-verification" element={<EmailVerification />} />
                         <Route path="/change-password" element={<ChangePassword />} />
+                        <Route path="/mypage/edit" element={<EditProfile />} /> 
                     </Routes>
                 </div>
             )}
