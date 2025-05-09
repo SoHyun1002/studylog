@@ -34,8 +34,6 @@ public class JwtToken {
         claims.put("uEmail", uEmail);
         claims.put("uName", uName);
         claims.put("uRole", uRole);
-        claims.put("iat", issuedAt.getTime() / 1000); // 초 단위
-        claims.put("exp", expiryDate.getTime() / 1000);
 
         return Jwts.builder()
                 .setClaims(claims)

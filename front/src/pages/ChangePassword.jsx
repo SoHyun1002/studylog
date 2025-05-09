@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { passwordChangeSuccess, passwordChangeFailure } from '../store/authSlice';
 import "../style/MyPage.css";
 
 const ChangePassword = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const [form, setForm] = useState({
-        currentPassword: '',
+        email: '',
+        verificationCode: '',
         newPassword: '',
         confirmPassword: ''
     });
     const [error, setError] = useState('');
+    const [isCodeSent, setIsCodeSent] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -23,103 +22,94 @@ const ChangePassword = () => {
         }));
     };
 
+    const handleSendVerificationCode = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('http://localhost:8921/api/users/send-verification-code', {
+                email: form.email
+            });
+            setIsCodeSent(true);
+            alert('인증 코드가 이메일로 전송되었습니다.');
+        } catch (error) {
+            setError(error.response?.data?.message || '인증 코드 전송 중 오류가 발생했습니다.');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-
         if (form.newPassword !== form.confirmPassword) {
             setError('새 비밀번호가 일치하지 않습니다.');
             return;
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await axios.post('http://localhost:8921/api/users/verify-password', 
-                { password: form.currentPassword },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
-            
-            if (response.data.verified) {
-                // 비밀번호 검증 성공 후 새 비밀번호로 변경
-                await axios.put('http://localhost:8921/api/users/change-password',
-                    { newPassword: form.newPassword },
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-
-                // 🔥 비밀번호 변경 후 최신 사용자 정보 다시 불러오기
-                const userResponse = await axios.get('http://localhost:8921/api/users/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                // Redux store 업데이트
-                dispatch({
-                    type: 'auth/updateUserInfo',
-                    payload: {
-                        Name: userResponse.data.uName,
-                        Email: userResponse.data.uEmail,
-                        Role: userResponse.data.uRole
-                    }
-                });
-
-                dispatch(passwordChangeSuccess());
-                alert('비밀번호가 변경되었습니다.');
-                navigate('/mypage');
-            }
+            await axios.post('http://localhost:8921/api/users/reset-password', {
+                email: form.email,
+                verificationCode: form.verificationCode,
+                newPassword: form.newPassword
+            });
+            alert('비밀번호가 성공적으로 변경되었습니다.');
+            navigate('/login');
         } catch (error) {
-            const errorMessage = error.response?.data?.message || '비밀번호 변경에 실패했습니다.';
-            setError(errorMessage);
-            dispatch(passwordChangeFailure(errorMessage));
+            setError(error.response?.data?.message || '비밀번호 변경 중 오류가 발생했습니다.');
         }
     };
 
     return (
         <div className="mypage-container">
-            <h2 className="mypage-header">비밀번호 변경</h2>
+            <h2 className="mypage-header">비밀번호 재설정</h2>
             <form onSubmit={handleSubmit} className="edit-form">
                 <div className="form-group">
-                    <label>현재 비밀번호</label>
+                    <label>이메일</label>
                     <input
-                        type="password"
-                        name="currentPassword"
-                        value={form.currentPassword}
+                        type="email"
+                        name="email"
+                        value={form.email}
                         onChange={handleChange}
                         required
                     />
+                    <button type="button" onClick={handleSendVerificationCode}>
+                        인증 코드 받기
+                    </button>
                 </div>
-                <div className="form-group">
-                    <label>새 비밀번호</label>
-                    <input
-                        type="password"
-                        name="newPassword"
-                        value={form.newPassword}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label>새 비밀번호 확인</label>
-                    <input
-                        type="password"
-                        name="confirmPassword"
-                        value={form.confirmPassword}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
+                {isCodeSent && (
+                    <>
+                        <div className="form-group">
+                            <label>인증 코드</label>
+                            <input
+                                type="text"
+                                name="verificationCode"
+                                value={form.verificationCode}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>새 비밀번호</label>
+                            <input
+                                type="password"
+                                name="newPassword"
+                                value={form.newPassword}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>새 비밀번호 확인</label>
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                value={form.confirmPassword}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </>
+                )}
                 {error && <p className="error-message">{error}</p>}
                 <div className="button-group">
-                    <button type="submit">변경</button>
-                    <button type="button" onClick={() => navigate('/mypage')}>취소</button>
+                    {isCodeSent && <button type="submit">변경</button>}
+                    <button type="button" onClick={() => navigate('/login')}>취소</button>
                 </div>
             </form>
         </div>

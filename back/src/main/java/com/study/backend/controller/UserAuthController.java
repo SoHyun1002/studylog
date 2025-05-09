@@ -295,4 +295,5 @@ public class UserAuthController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
 }

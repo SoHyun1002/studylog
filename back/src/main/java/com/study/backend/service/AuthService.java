@@ -266,6 +266,30 @@ public class AuthService {
     }
 
     /**
+     * 인증 코드를 검증합니다.
+     *
+     * @param email 사용자 이메일
+     * @param code 인증 코드
+     * @return 인증 코드가 일치하면 true, 아니면 false
+     */
+    public boolean verifyCode(String email, String code) {
+        String redisKey = "verification:" + email;
+        String savedCode = redisTemplate.opsForValue().get(redisKey);
+        
+        if (savedCode == null) {
+            return false;
+        }
+
+        boolean isValid = savedCode.equals(code);
+        if (isValid) {
+            // 인증 성공 시 Redis에서 코드 삭제
+            redisTemplate.delete(redisKey);
+        }
+        
+        return isValid;
+    }
+
+    /**
      * 사용자의 비밀번호를 변경합니다.
      * 기존 비밀번호를 null로 설정하고 새로운 비밀번호를 인코딩하여 저장합니다.
      *
