@@ -6,6 +6,9 @@ import { updateUserInfo, logout } from '../store/authSlice';
 import "../style/MyPage.css";
 import "../style/modal.css";
 import "../style/deleteAccount.css";
+import MyInfoSection from './MyInfoSection';
+import DeleteAccountSection from './DeleteAccountSection';
+import StudyGroupSection from './StudyGroupSection';
 
 const MyPage = () => {
     const navigate = useNavigate();
@@ -22,6 +25,14 @@ const MyPage = () => {
     const [deletePassword, setDeletePassword] = useState('');
     const [showRestoreModal, setShowRestoreModal] = useState(false);
     const [restorePassword, setRestorePassword] = useState('');
+    const [userInfo, setUserInfo] = useState({
+        email: '',
+        nickname: '',
+        profileImage: null
+    });
+    const [managedGroups, setManagedGroups] = useState([]);
+    const [joinedGroups, setJoinedGroups] = useState([]);
+    const [selectedMenu, setSelectedMenu] = useState('info');
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -66,7 +77,42 @@ const MyPage = () => {
                 navigate("/login");
             }
         });
+
+        fetchUserInfo();
+        fetchStudyGroups();
     }, [navigate]);
+
+    const fetchUserInfo = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            const response = await axios.get('http://localhost:8921/api/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setUserInfo(response.data);
+        } catch (error) {
+            setError('사용자 정보를 불러오는데 실패했습니다.');
+        }
+    };
+
+    const fetchStudyGroups = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            const [managedResponse, joinedResponse] = await Promise.all([
+                axios.get('http://localhost:8921/api/study-groups/managed', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:8921/api/study-groups/joined', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+            setManagedGroups(managedResponse.data);
+            setJoinedGroups(joinedResponse.data);
+        } catch (error) {
+            setError('스터디그룹 정보를 불러오는데 실패했습니다.');
+        }
+    };
 
     const handlePasswordVerification = async (e) => {
         e.preventDefault();
@@ -262,163 +308,20 @@ const MyPage = () => {
     if (!user) return <div>로딩 중...</div>;
 
     return (
-        <div className="mypage-container">
-            <h2 className="mypage-header">마이페이지</h2>
-
-            {!isEditing && !isVerifying && (
-                <div className="user-info">
-                    <p><strong>이름:</strong> {user.name}</p>
-                    <p><strong>이메일:</strong> {user.email}</p>
-                    <div className="button-group">
-                        <button 
-                            className="edit-button"
-                            onClick={() => setIsVerifying(true)}
-                        >
-                            회원정보 수정
-                        </button>
-                        {user.deletedAt ? (
-                            <button 
-                                className="restore-account-button"
-                                onClick={() => setShowRestoreModal(true)}
-                            >
-                                계정 복구
-                            </button>
-                        ) : (
-                            <button 
-                                className="delete-account-button"
-                                onClick={() => setShowDeleteModal(true)}
-                            >
-                                회원 탈퇴
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {isVerifying && (
-                <form onSubmit={handlePasswordVerification} className="verify-form">
-                    <h3>비밀번호 확인</h3>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="현재 비밀번호를 입력하세요"
-                        required
-                    />
-                    {error && <p className="error-message">{error}</p>}
-                    <button type="submit">확인</button>
-                    <button type="button" onClick={() => setIsVerifying(false)}>취소</button>
-                </form>
-            )}
-
-            {isEditing && (
-                <form onSubmit={handleEditSubmit} className="edit-form">
-                    <h3>회원정보 수정</h3>
-                    <div className="form-group">
-                        <label>이름</label>
-                        <input
-                            type="text"
-                            name="uName"
-                            value={editForm.uName}
-                            onChange={handleEditChange}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>이메일</label>
-                        <input
-                            type="email"
-                            value={user.email}
-                            disabled
-                            className="disabled-input"
-                        />
-                    </div>
-                    {error && <p className="error-message">{error}</p>}
-                    <div className="button-group">
-                        <button type="submit">저장</button>
-                        <button type="button" onClick={() => setIsEditing(false)}>취소</button>
-                    </div>
-                </form>
-            )}
-
-            {showDeleteModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h3>회원 탈퇴</h3>
-                            <button 
-                                className="close-button"
-                                onClick={() => {
-                                    setShowDeleteModal(false);
-                                    setDeletePassword('');
-                                    setError('');
-                                }}
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <p>정말로 탈퇴하시겠습니까? 탈퇴한 계정은 복구할 수 없습니다.</p>
-                        <form onSubmit={handleDeleteAccount} className="delete-form">
-                            <p>비밀번호를 입력하여 확인해주세요:</p>
-                            <input
-                                type="password"
-                                value={deletePassword}
-                                onChange={(e) => setDeletePassword(e.target.value)}
-                                required
-                            />
-                            {error && <p className="error-message">{error}</p>}
-                            <div className="button-group">
-                                <button type="submit" className="delete-confirm-button">
-                                    탈퇴하기
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onClick={() => {
-                                        setShowDeleteModal(false);
-                                        setDeletePassword('');
-                                        setError('');
-                                    }}
-                                >
-                                    취소
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {showRestoreModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>계정 복구</h3>
-                        <p>계정을 복구하시려면 비밀번호를 입력해주세요:</p>
-                        <form onSubmit={handleRestoreAccount} className="restore-form">
-                            <input
-                                type="password"
-                                value={restorePassword}
-                                onChange={(e) => setRestorePassword(e.target.value)}
-                                required
-                            />
-                            {error && <p className="error-message">{error}</p>}
-                            <div className="button-group">
-                                <button type="submit" className="restore-confirm-button">
-                                    복구하기
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onClick={() => {
-                                        setShowRestoreModal(false);
-                                        setRestorePassword('');
-                                        setError('');
-                                    }}
-                                >
-                                    취소
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+        <div className="mypage-wrapper">
+            <nav className="sidebar">
+                <h2>마이페이지</h2>
+                <ul>
+                    <li className={selectedMenu === 'info' ? 'active' : ''} onClick={() => setSelectedMenu('info')}>내 정보</li>
+                    <li className={selectedMenu === 'study' ? 'active' : ''} onClick={() => setSelectedMenu('study')}>스터디 그룹</li>
+                    <li className={selectedMenu === 'delete' ? 'active' : ''} onClick={() => setSelectedMenu('delete')}>회원 탈퇴</li>
+                </ul>
+            </nav>
+            <main className="main-content">
+                {selectedMenu === 'info' && <MyInfoSection />}
+                {selectedMenu === 'study' && <StudyGroupSection />}
+                {selectedMenu === 'delete' && <DeleteAccountSection />}
+            </main>
         </div>
     );
 };

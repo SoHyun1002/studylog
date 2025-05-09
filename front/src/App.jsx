@@ -21,6 +21,7 @@ import EmailVerification from "./pages/EmailVerification";
 import ChangePassword from './pages/ChangePassword';
 import ResetPassword from './pages/ResetPassword';
 
+
 function App() {
     const location = useLocation();
     const dispatch = useDispatch();
