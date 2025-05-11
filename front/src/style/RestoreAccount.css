@@ -1,0 +1,94 @@
+/* RestoreAccount.css */
+
+.restore-form {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.restore-form h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1.2rem;
+    text-align: center;
+}
+
+.restore-form p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 1.2rem;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    color: #222;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 4px rgba(74, 144, 226, 0.4);
+}
+
+button[type="submit"],
+button.back-button {
+    width: 100%;
+    padding: 0.7rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"] {
+    background-color: #4a90e2;
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: #357ab8;
+}
+
+button[type="submit"]:disabled {
+    background-color: #a0c4e8;
+    cursor: not-allowed;
+}
+
+button.back-button {
+    background-color: #ccc;
+    color: #333;
+}
+
+button.back-button:hover {
+    background-color: #b3b3b3;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}

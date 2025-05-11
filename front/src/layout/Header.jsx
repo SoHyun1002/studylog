@@ -38,8 +38,11 @@ function Header() {
                 STUDYLOG
             </h1>
             <nav className="nav-menu">
+                <span onClick={() => navigate("/study/search")}>스터디 찾기</span>
+                <span onClick={() => navigate("/study/create")}>스터디 만들기</span>
                 <span onClick={() => navigate("/board")}>게시판</span>
                 <span onClick={() => navigate("/schedule")}>일정</span>
+                <span onClick={() => navigate("/openai-test")}>AI 테스트</span>
             </nav>
             <div className="header-buttons">
                 {isAdmin && (

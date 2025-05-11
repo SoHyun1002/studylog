@@ -36,6 +36,7 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

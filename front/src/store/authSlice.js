@@ -40,7 +40,8 @@ const authSlice = createSlice({
             state.user = {
                 name: action.payload.uName,
                 email: action.payload.uEmail,
-                role: action.payload.uRole
+                role: action.payload.uRole,
+                deletedAt: action.payload.deletedAt
             };
             state.error = null;
             
@@ -50,11 +51,12 @@ const authSlice = createSlice({
                 user: {
                     name: action.payload.uName,
                     email: action.payload.uEmail,
-                    role: action.payload.uRole
+                    role: action.payload.uRole,
+                    deletedAt: action.payload.deletedAt
                 },
                 isLoggedIn: true,
                 loading: false,
-                error: null 
+                error: null 
             };
             localStorage.setItem('userState', JSON.stringify(currentState));
         },
@@ -80,7 +82,8 @@ const authSlice = createSlice({
                 ...state.user,
                 name: action.payload.Name,
                 email: action.payload.Email,
-                role: action.payload.Role
+                role: action.payload.Role,
+                deletedAt: action.payload.deletedAt
             };
             
             // localStorage 업데이트
@@ -90,7 +93,8 @@ const authSlice = createSlice({
                     ...state.user,
                     name: action.payload.Name,
                     email: action.payload.Email,
-                    role: action.payload.Role
+                    role: action.payload.Role,
+                    deletedAt: action.payload.deletedAt
                 },
                 isLoggedIn: true,
                 loading: false,

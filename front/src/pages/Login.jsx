@@ -32,30 +32,57 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
+            console.log('로그인 시도:', { uEmail, uPassword });
             const res = await axios.post("http://localhost:8921/api/users/login", {
                 uEmail,
-                uPassword,
+                uPassword
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
             
-            const { accessToken } = res.data;
-            
-            // 토큰 디코딩하여 사용자 정보 추출
-            const decodedToken = decodeToken(accessToken);
-            if (!decodedToken) {
-                throw new Error('토큰 디코딩 실패');
+            console.log('로그인 응답:', res.data);
+
+            // 소프트 딜리트된 계정 체크
+            if (res.data.deletedAt) {
+                alert(res.data.message);
+                navigate('/restore-account', { state: { email: uEmail } });
+                return;
             }
 
+            const { accessToken } = res.data;
+            
             // 토큰을 localStorage에 저장
             localStorage.setItem('accessToken', accessToken);
             
             // axios 기본 헤더에 토큰 설정
             axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
+            // 사용자 정보 조회
+            const userResponse = await axios.get('http://localhost:8921/api/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
             // Redux에는 사용자 정보만 저장
             dispatch(loginSuccess({
-                email: decodedToken.uEmail,
-                name: decodedToken.uName,
-                role: decodedToken.uRole
+                uName: userResponse.data.uName,
+                uEmail: userResponse.data.uEmail,
+                uRole: userResponse.data.uRole,
+                deletedAt: userResponse.data.deletedAt
+            }));
+
+            // 로컬 스토리지에 사용자 정보 저장
+            localStorage.setItem('userState', JSON.stringify({
+                isLoggedIn: true,
+                user: {
+                    uName: userResponse.data.uName,
+                    uEmail: userResponse.data.uEmail,
+                    uRole: userResponse.data.uRole,
+                    deletedAt: userResponse.data.deletedAt
+                }
             }));
             
             alert("로그인 성공!");
@@ -63,8 +90,8 @@ function Login() {
 
         } catch (err) {
             console.error(err);
-            if (err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
+            if (err.response && err.response.data && err.response.data.error) {
+                setError(err.response.data.error);
             } else {
                 setError("로그인 중 오류가 발생했습니다.");
             }

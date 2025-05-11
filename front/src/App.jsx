@@ -21,12 +21,18 @@ import EmailVerification from "./pages/EmailVerification";
 import ChangePassword from './pages/ChangePassword';
 import ResetPassword from './pages/ResetPassword';
 import EditProfile from './pages/EditProfile';
+import OpenAIPage from './pages/OpenAIPage';
+import StudySearch from './pages/StudySearch';
+import StudyCreate from './pages/StudyCreate';
+import StudyDetail from './pages/StudyDetail';
+import RestoreAccount from './pages/RestoreAccount';
+
 
 
 function App() {
     const location = useLocation();
     const dispatch = useDispatch();
-    const hideLayoutRoutes = ["/login", "/register", "/reset-password"];
+    const hideLayoutRoutes = ["/login", "/register", "/reset-password", "/restore-account"];
     const hideLayout = hideLayoutRoutes.includes(location.pathname);
 
     useEffect(() => {
@@ -41,7 +47,8 @@ function App() {
                 dispatch(loginSuccess({
                     uName: userState.user.name,
                     uEmail: userState.user.email,
-                    uRole: userState.user.role
+                    uRole: userState.user.role,
+                    deletedAt: userState.user.deletedAt
                 }));
                 // axios 헤더에 토큰 설정
                 axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
@@ -57,7 +64,8 @@ function App() {
                     dispatch(updateUserInfo({
                         Name: res.data.uName,
                         Email: res.data.uEmail,
-                        Role: res.data.uRole
+                        Role: res.data.uRole,
+                        deletedAt: res.data.deletedAt
                     }));
                 })
                 .catch(error => {
@@ -76,6 +84,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/restore-account" element={<RestoreAccount />} />
                 </Routes>
             ) : (
                 <div className="wrap">
@@ -90,7 +99,11 @@ function App() {
                         <Route path="/schedule" element={<SchedulePage />} />
                         <Route path="/email-verification" element={<EmailVerification />} />
                         <Route path="/change-password" element={<ChangePassword />} />
-                        <Route path="/mypage/edit" element={<EditProfile />} /> 
+                        <Route path="/mypage/edit" element={<EditProfile />} />
+                        <Route path="/openai-test" element={<OpenAIPage />} />
+                        <Route path="/study/search" element={<StudySearch />} />
+                        <Route path="/study/create" element={<StudyCreate />} />
+                        <Route path="/study/:id" element={<StudyDetail />} />
                     </Routes>
                 </div>
             )}

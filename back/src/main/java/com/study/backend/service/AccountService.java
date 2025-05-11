@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
 
 @Service
 public class AccountService {
@@ -30,7 +31,7 @@ public class AccountService {
     }
 
     @Transactional
-    public ResponseEntity<Map<String, String>> deleteAccount(String type, String uEmail, String token) {
+    public ResponseEntity<Map<String, String>> deleteAccount(String uEmail, String token) {
         try {
             log.info("계정 삭제 요청 - email: {}", uEmail);
 
@@ -58,18 +59,63 @@ public class AccountService {
             }
 
             User user = userOpt.get();
-            userRepository.delete(user);
-            log.info("계정 삭제 완료 - email: {}", uEmail);
+            // 소프트 삭제: deletedAt 설정
+            user.setDeletedAt(LocalDateTime.now());
+            userRepository.save(user);
+            log.info("계정 소프트 삭제 완료 - email: {}", uEmail);
             
             // 캐시 무효화
             refreshTokenRepository.deleteByuId(user.getuId());
             log.info("리프레시 토큰 삭제 완료 - userId: {}", user.getuId());
             
-            return ResponseEntity.ok(Map.of("message", "계정이 삭제되었습니다. 로그아웃됩니다."));
+            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 신청되었습니다. 30일 후 계정이 삭제됩니다."));
         } catch (Exception e) {
             log.error("계정 삭제 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "계정 삭제 처리 중 오류가 발생했습니다: " + e.getMessage()));
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<Map<String, String>> restoreAccount(String uEmail) {
+        try {
+            log.info("계정 복구 요청 - email: {}", uEmail);
+
+            if (uEmail == null || uEmail.trim().isEmpty()) {
+                log.error("이메일이 비어있습니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "이메일이 필요합니다."));
+            }
+
+            Optional<User> userOpt = userRepository.findByuEmail(uEmail.trim());
+            if (userOpt.isEmpty()) {
+                log.error("사용자를 찾을 수 없습니다: {}", uEmail);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "사용자를 찾을 수 없습니다."));
+            }
+
+            User user = userOpt.get();
+            if (user.getDeletedAt() == null) {
+                log.error("삭제되지 않은 계정입니다: {}", uEmail);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "삭제되지 않은 계정입니다."));
+            }
+
+            // 계정 복구: deletedAt을 null로 설정
+            user.setDeletedAt(null);
+            try {
+                userRepository.save(user);
+                log.info("계정 복구 완료 - email: {}", uEmail);
+                return ResponseEntity.ok(Map.of("message", "계정이 성공적으로 복구되었습니다."));
+            } catch (Exception e) {
+                log.error("계정 저장 중 오류 발생", e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "계정 저장 중 오류가 발생했습니다."));
+            }
+        } catch (Exception e) {
+            log.error("계정 복구 처리 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "계정 복구 처리 중 오류가 발생했습니다."));
         }
     }
 } 

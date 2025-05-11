@@ -234,53 +234,6 @@ public class UserAuthController {
     }
 
     /**
-     * 회원 탈퇴를 처리합니다.
-     * @param type 탈퇴 유형 ('soft' 또는 'hard')
-     * @param uEmail 사용자 이메일
-     * @param token 인증 토큰
-     * @return 탈퇴 처리 결과
-     */
-    @PostMapping("/delete/{type}/{uEmail}")
-    public ResponseEntity<Map<String, String>> deleteAccount(
-            @PathVariable String type,
-            @PathVariable String uEmail,
-            @RequestHeader("Authorization") String token) {
-
-        if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String accessToken = token.substring(7);
-        String tokenEmail = jwtToken.getUserEmail(accessToken);
-
-        // 토큰의 이메일과 요청의 이메일이 일치하는지 확인
-        if (!uEmail.equals(tokenEmail)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        Optional<User> userOpt = userRepository.findByuEmail(uEmail);
-
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        User user = userOpt.get();
-
-        if ("soft".equals(type)) {
-            // 소프트 삭제: deletedAt만 설정
-            user.setDeletedAt(LocalDateTime.now());
-            userRepository.save(user);
-            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 신청되었습니다. 로그아웃됩니다."));
-        } else if ("hard".equals(type)) {
-            // 하드 삭제: 즉시 삭제
-            userRepository.delete(user);
-            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 완료되었습니다."));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("error", "잘못된 탈퇴 유형입니다."));
-        }
-    }
-
-    /**
      * 비밀번호를 변경합니다.
      */
     @PostMapping("/reset-password")

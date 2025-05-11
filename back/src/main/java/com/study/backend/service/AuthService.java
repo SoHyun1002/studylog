@@ -118,6 +118,20 @@ public class AuthService {
                     .body(Map.of("error", "잘못된 이메일 또는 비밀번호입니다."));
         }
 
+        // 소프트 딜리트된 계정 체크
+        if (user.getDeletedAt() != null) {
+            LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+            if (user.getDeletedAt().isBefore(thirtyDaysAgo)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "삭제된 계정입니다."));
+            }
+            // 30일 이내의 삭제된 계정인 경우, 계정 복구 페이지로 리다이렉트하기 위한 응답
+            Map<String, Object> response = new HashMap<>();
+            response.put("deletedAt", user.getDeletedAt().toString());
+            response.put("message", "삭제 예정인 계정입니다. 계정 복구 페이지로 이동합니다.");
+            return ResponseEntity.ok(response);
+        }
+
         String accessToken = jwtToken.generateTokenWithClaims(user.getuEmail(), user.getuName(), user.getuRole());
         String refreshToken = jwtToken.generateRefreshToken(user.getuEmail());
 

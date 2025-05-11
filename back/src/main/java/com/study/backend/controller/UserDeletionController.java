@@ -25,7 +25,13 @@ public class UserDeletionController {
     public ResponseEntity<Map<String, String>> deleteAccount(
             @PathVariable String uEmail,
             @RequestHeader("Authorization") String token) {
-        return accountService.deleteAccount(null, uEmail, token);
+        return accountService.deleteAccount(uEmail, token);
+    }
+
+    @PostMapping("/restore/{uEmail}")
+    public ResponseEntity<Map<String, String>> restoreAccount(
+            @PathVariable String uEmail) {
+        return accountService.restoreAccount(uEmail);
     }
 
     @ExceptionHandler(Exception.class)

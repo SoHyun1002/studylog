@@ -1,0 +1,365 @@
+.study-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.study-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.study-header h1 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 2em;
+}
+
+.study-meta {
+    display: flex;
+    gap: 15px;
+    color: #666;
+}
+
+.study-meta span {
+    padding: 5px 10px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.study-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.study-main section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.study-main h2 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1.5em;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+}
+
+.study-info p {
+    line-height: 1.6;
+    color: #444;
+}
+
+.schedule-info p {
+    margin: 8px 0;
+    color: #666;
+}
+
+.curriculum-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.curriculum-week {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.curriculum-week h3 {
+    margin: 0 0 10px 0;
+    color: #007bff;
+    font-size: 1.1em;
+}
+
+.curriculum-week ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.curriculum-week li {
+    padding: 5px 0;
+    color: #666;
+    position: relative;
+    padding-left: 20px;
+}
+
+.curriculum-week li:before {
+    content: "•";
+    color: #007bff;
+    position: absolute;
+    left: 0;
+}
+
+.study-requirements ul,
+.study-tools ul,
+.study-benefits ul {
+    list-style: none;
+    padding: 0;
+}
+
+.study-requirements li,
+.study-tools li,
+.study-benefits li {
+    padding: 8px 0;
+    color: #666;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 25px;
+}
+
+.study-requirements li:before,
+.study-tools li:before,
+.study-benefits li:before {
+    content: "✓";
+    color: #28a745;
+    position: absolute;
+    left: 0;
+}
+
+.study-requirements li:last-child,
+.study-tools li:last-child,
+.study-benefits li:last-child {
+    border-bottom: none;
+}
+
+.study-sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+.leader-info,
+.member-list {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.leader-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.leader-profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.leader-profile h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.leader-profile p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.member-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 0 0;
+}
+
+.member-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.member-list li:last-child {
+    border-bottom: none;
+}
+
+.member-list img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.member-role {
+    color: #007bff;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.join-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.join-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.join-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.join-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 1em;
+    line-height: 1.5;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.modal-buttons button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+}
+
+.modal-buttons button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-buttons button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.modal-buttons button:active {
+    transform: translateY(0);
+}
+
+/* 로딩 및 에러 상태 */
+.loading,
+.not-found {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 1.2em;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .study-content {
+        grid-template-columns: 1fr;
+    }
+
+    .study-sidebar {
+        position: static;
+    }
+
+    .study-meta {
+        flex-wrap: wrap;
+    }
+
+    .curriculum-week {
+        padding: 10px;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+} 
